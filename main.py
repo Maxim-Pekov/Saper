@@ -1,4 +1,5 @@
 import tkinter as tk
+from random import shuffle
 
 class MyButton(tk.Button):
     def __init__(self, master, x, y, btn_number, *args, **kwargs):
@@ -15,12 +16,12 @@ class MinesKeeper:
     win = tk.Tk()
     ROW = 5
     COLUMN = 5
+    MINES = 10
 
     def __init__(self):
         self.win.title('Сапёр')
         self.buttons = []
         self.count = 1
-        self.mines
         for i in range(MinesKeeper.ROW):
             temp = []
             for j in range(MinesKeeper.COLUMN):
@@ -42,9 +43,23 @@ class MinesKeeper:
 
     def start(self):
         # self.create_button()
+        self.insert_mines()
         self.print_btn()
         MinesKeeper.win.mainloop()
 
+    def index_mines(self):
+        index = list(range(1, self.ROW * self.COLUMN + 1))
+        shuffle(index)
+        index = index[:self.MINES]
+        print(index)
+        return index
+
+    def insert_mines(self):
+        index = self.index_mines()
+        for row_buttons in self.buttons:
+            for buttons in row_buttons:
+                if buttons.btn_number in index:
+                    buttons.is_mine = True
 
 game = MinesKeeper()
 game.start()
