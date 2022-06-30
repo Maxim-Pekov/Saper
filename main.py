@@ -44,20 +44,35 @@ class MinesKeeper:
         menubar = tk.Menu(self.win)
         self.win.config(menu=menubar)
 
-        settings_menu = tk.Menu(menubar)
-        settings_menu.add_command(label='название 1й строки в меню')
-        settings_menu.add_command(label='2 я строка')
-        settings_menu.add_command(label='3я строка')
+        settings_menu = tk.Menu(menubar, tearoff=0)
+        settings_menu.add_command(label='Играть', command=self.reload)
+        settings_menu.add_command(label='Настройки')
+        settings_menu.add_command(label='Выход', command=self.win.destroy)
         menubar.add_cascade(label='MENU', menu=settings_menu)
+
+        for i in range(1, MinesKeeper.ROW + 1):
+            tk.Grid.rowconfigure(self.win, i, weight=1)
+
+        for i in range(1, MinesKeeper.COLUMN + 1):
+            tk.Grid.columnconfigure(self.win, i, weight=1)
 
         for i in range(MinesKeeper.ROW):
             temp = []
             for j in range(MinesKeeper.COLUMN):
                 btn = MyButton(MinesKeeper.win, i, j, self.count, font=('Arial', 15, 'bold'), width=3)
-                btn.grid(row=i, column=j)
+                btn.grid(row=i, column=j, stick='nwes')
                 temp.append(btn)
                 self.count += 1
             self.buttons.append(temp)
+
+    def reload(self):
+        [child.destroy() for child in self.win.winfo_children()]
+        self.buttons = []
+        self.__init__()
+        self.click_button()
+        self.first_click_t = True
+        self.GAME_OVER = False
+
 
     def click_button(self):
         for i in range(MinesKeeper.ROW):
