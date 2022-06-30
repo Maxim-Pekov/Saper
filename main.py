@@ -40,6 +40,16 @@ class MinesKeeper:
     def __init__(self):
         self.win.title('Сапёр')
         self.count = 1
+
+        menubar = tk.Menu(self.win)
+        self.win.config(menu=menubar)
+
+        settings_menu = tk.Menu(menubar)
+        settings_menu.add_command(label='название 1й строки в меню')
+        settings_menu.add_command(label='2 я строка')
+        settings_menu.add_command(label='3я строка')
+        menubar.add_cascade(label='MENU', menu=settings_menu)
+
         for i in range(MinesKeeper.ROW):
             temp = []
             for j in range(MinesKeeper.COLUMN):
