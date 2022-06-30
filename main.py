@@ -35,7 +35,7 @@ class MinesKeeper:
     MINES = 15
     buttons = []
     first_click_t = True
-    first_click_number = 0
+    GAME_OVER = False
 
     def __init__(self):
         self.win.title('Сапёр')
@@ -66,15 +66,26 @@ class MinesKeeper:
                 btn.config(command=lambda button=btn: self.click(button))
 
     def click(self, button: MyButton):
+        if self.GAME_OVER:
+            return None
+
         # print(button)
         if self.first_click_t:
             self.first_click_t = False
             self.insert_mines(button.btn_number)
             self.print_btn()
+
         if button.is_mine:
             button.config(text='*', state=tk.DISABLED, background='#820000', disabledforeground='black')
             button.is_open = True
             showinfo('Вы проиграли', 'Вы проиграли')
+            self.GAME_OVER = True
+            for i in range(MinesKeeper.ROW):
+                for j in range(MinesKeeper.COLUMN):
+                    btn = self.buttons[i][j]
+                    if btn.is_mine: btn['text'] = '*'
+                    # if not btn.is_mine: btn['text'] = btn.count_mines
+
         else:
             self.width_search(button)
         button.config(relief=tk.SUNKEN)
