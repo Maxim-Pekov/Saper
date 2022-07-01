@@ -73,12 +73,23 @@ class MinesKeeper:
         self.first_click_t = True
         self.GAME_OVER = False
 
-
     def click_button(self):
         for i in range(MinesKeeper.ROW):
             for j in range(MinesKeeper.COLUMN):
                 btn = self.buttons[i][j]
                 btn.config(command=lambda button=btn: self.click(button))
+
+                def rkm(event):
+                    btn1 = event.widget
+                    if btn1['state'] == 'normal':
+                        btn1['state'] = 'disabled'
+                        btn1['text'] = '🚩'
+                        btn1['disabledforeground'] = 'red'
+                    elif btn1['text'] == '🚩':
+                        btn1['text'] = ''
+                        btn1['state'] = 'normal'
+
+                btn.bind('<Button-3>', rkm)
 
     def click(self, button: MyButton):
         if self.GAME_OVER:
