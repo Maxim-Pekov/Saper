@@ -36,6 +36,8 @@ class MinesKeeper:
     buttons = []
     first_click_t = True
     GAME_OVER = False
+    WIN = False
+    count_disabled = 0
 
     def __init__(self):
         self.win.title('Сапёр')
@@ -103,10 +105,17 @@ class MinesKeeper:
             if not row_entry.get().isdigit():
                 row_entry.delete(0, tk.END)
         row_entry.bind('<Leave>', leave_entry)
-        # Эта функция удаляет содержимое при нажатии левой кнопки мыши в поле ввода
-        def lkm(event):
-            row_entry.delete(0, tk.END)
-        row_entry.bind('<Button-1>', lkm)
+
+        # Эта функция удаляет содержимое при нажатии левой кнопки мыши в поле ввода в настройках
+        def lkm_r(event):
+            event.widget.delete(0, tk.END)
+        def lkm_c(event):
+            event.widget.delete(0, tk.END)
+        def lkm_m(event):
+            event.widget.delete(0, tk.END)
+        row_entry.bind('<Button-1>', lkm_r)
+        column_entry.bind('<Button-1>', lkm_c)
+        mines_entry.bind('<Button-1>', lkm_m)
 
     def settings_btn_confirm(self, row: tk.Entry, column: tk.Entry, mines: tk.Entry):
         try:
@@ -144,12 +153,19 @@ class MinesKeeper:
                 btn.bind('<Button-3>', rkm)
 
     def click(self, button: MyButton):
+        if self.WIN:
+            showinfo('Ура', 'Вы выйграли')
+        else:
+            if self.count_disabled == self.ROW * self.COLUMN:
+                showinfo('Ура', 'Вы выйграли')
         if self.GAME_OVER:
             return None
 
         # print(button)
         if self.first_click_t:
             self.first_click_t = False
+            button.is_open = True
+            self.count_disabled += 1
             self.insert_mines(button.btn_number)
             self.print_btn()
 
@@ -180,6 +196,9 @@ class MinesKeeper:
                 cur_btn.config(text='')
             cur_btn.is_open = True
             cur_btn.config(state=tk.DISABLED)
+            self.count_disabled += 1
+            if self.count_disabled == self.ROW * self.COLUMN:
+                showinfo('Ура', 'Вы выйграли')
             cur_btn.config(relief=tk.SUNKEN)
 
             if cur_btn.count_mines == 0:
