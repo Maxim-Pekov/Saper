@@ -1,6 +1,6 @@
 import tkinter as tk
 from random import shuffle
-from tkinter.messagebox import showinfo
+from tkinter.messagebox import showinfo, showerror
 
 colors = {
     0: 'black',
@@ -36,6 +36,8 @@ class MinesKeeper:
     buttons = []
     first_click_t = True
     GAME_OVER = False
+    WIN = False
+    count_disabled = 0
 
     def __init__(self):
         self.win.title('Сапёр')
@@ -46,7 +48,7 @@ class MinesKeeper:
 
         settings_menu = tk.Menu(menubar, tearoff=0)
         settings_menu.add_command(label='Играть', command=self.reload)
-        settings_menu.add_command(label='Настройки')
+        settings_menu.add_command(label='Настройки', command=self.create_settings_window)
         settings_menu.add_command(label='Выход', command=self.win.destroy)
         menubar.add_cascade(label='MENU', menu=settings_menu)
 
@@ -64,6 +66,65 @@ class MinesKeeper:
                 temp.append(btn)
                 self.count += 1
             self.buttons.append(temp)
+
+    def create_settings_window(self):
+        win_settings = tk.Toplevel(self.win)
+        label_row = tk.Label(win_settings, text='Количество строк')
+        label_row.grid(row=0, column=0)
+        row_entry = tk.Entry(win_settings, justify=tk.CENTER)
+        row_entry.grid(row=0, column=1, pady=2, padx=2)
+        row_entry.insert(0, self.ROW)
+        label_column = tk.Label(win_settings, text='Количество столбцов')
+        label_column.grid(row=1, column=0)
+        column_entry = tk.Entry(win_settings, justify=tk.CENTER)
+        column_entry.grid(row=1, column=1, pady=2, padx=2)
+        column_entry.insert(0, self.COLUMN)
+        label_mines = tk.Label(win_settings, text='Количество мин')
+        label_mines.grid(row=2, column=0)
+        mines_entry = tk.Entry(win_settings, justify=tk.CENTER)
+        mines_entry.grid(row=2, column=1, pady=2, padx=2)
+        mines_entry.insert(0, self.MINES)
+        settings_btn = tk.Button(win_settings, text='Принять настройки',
+                                 command=lambda : self.settings_btn_confirm(row_entry, column_entry, mines_entry))
+        settings_btn.grid(row=3, column=0, sticky='we', columnspan=2)
+
+        # # Эта функция не дает ввести буквы в поля enter в меню сетингс (не работает)
+        # def press_key(event):
+        #     c = row_entry.get()
+        #     if not event.char.isdigit():
+        #         c = event.char
+        #         event.char = ''
+        #         event.keysym = ''
+        #         row_entry.delete(0, tk.END)
+        #         row_entry.insert(0, '')
+        #         row_entry['text'] = ''        #
+        # row_entry.bind('<Key>', press_key)
+
+        #эта функция удаляет содержимое entry усли там не цифры
+        def leave_entry(event):
+            if not row_entry.get().isdigit():
+                row_entry.delete(0, tk.END)
+        row_entry.bind('<Leave>', leave_entry)
+
+        # Эта функция удаляет содержимое при нажатии левой кнопки мыши в поле ввода в настройках
+        def lkm_r(event):
+            event.widget.delete(0, tk.END)
+        def lkm_c(event):
+            event.widget.delete(0, tk.END)
+        def lkm_m(event):
+            event.widget.delete(0, tk.END)
+        row_entry.bind('<Button-1>', lkm_r)
+        column_entry.bind('<Button-1>', lkm_c)
+        mines_entry.bind('<Button-1>', lkm_m)
+
+    def settings_btn_confirm(self, row: tk.Entry, column: tk.Entry, mines: tk.Entry):
+        try:
+            MinesKeeper.ROW = int(row.get())
+            MinesKeeper.COLUMN = int(column.get())
+            MinesKeeper.MINES = int(mines.get())
+            self.reload()
+        except:
+            showerror('Ошибка', 'Введите в настройка только цифры')
 
     def reload(self):
         [child.destroy() for child in self.win.winfo_children()]
@@ -92,12 +153,19 @@ class MinesKeeper:
                 btn.bind('<Button-3>', rkm)
 
     def click(self, button: MyButton):
+        if self.WIN:
+            showinfo('Ура', 'Вы выйграли')
+        else:
+            if self.count_disabled == self.ROW * self.COLUMN:
+                showinfo('Ура', 'Вы выйграли')
         if self.GAME_OVER:
             return None
 
         # print(button)
         if self.first_click_t:
             self.first_click_t = False
+            button.is_open = True
+            self.count_disabled += 1
             self.insert_mines(button.btn_number)
             self.print_btn()
 
@@ -128,6 +196,9 @@ class MinesKeeper:
                 cur_btn.config(text='')
             cur_btn.is_open = True
             cur_btn.config(state=tk.DISABLED)
+            self.count_disabled += 1
+            if self.count_disabled == self.ROW * self.COLUMN:
+                showinfo('Ура', 'Вы выйграли')
             cur_btn.config(relief=tk.SUNKEN)
 
             if cur_btn.count_mines == 0:
